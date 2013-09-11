@@ -14,11 +14,9 @@
 #include <linux/module.h>
 #include <linux/sysfs.h>
 #include <linux/device.h>
-#include <linux/usb.h>
 #include <linux/hid.h>
 #include <linux/input.h>
 #include <linux/leds.h>
-#include "usbhid/usbhid.h"
 
 #include "hid-ids.h"
 
@@ -98,10 +96,9 @@ static int tpkbd_input_mapping(struct hid_device *hdev,
 		struct hid_input *hi, struct hid_field *field,
 		struct hid_usage *usage, unsigned long **bit, int *max)
 {
-	struct usbhid_device *uhdev;
-
-	uhdev = (struct usbhid_device *) hdev->driver_data;
-	if (uhdev->ifnum == 1 && usage->hid == (HID_UP_BUTTON | 0x0010)) {
+	if (usage->hid == (HID_UP_BUTTON | 0x0010)) {
+		/* mark the device as pointer */
+		hid_set_drvdata(hdev, (void *)1);
 		map_key_clear(KEY_MICMUTE);
 		return 1;
 	}
@@ -455,7 +452,6 @@ static int tpkbd_probe(struct hid_device *hdev,
 		const struct hid_device_id *id)
 {
 	int ret;
-	struct usbhid_device *uhdev;
 
 	ret = hid_parse(hdev);
 	if (ret) {
@@ -469,9 +465,8 @@ static int tpkbd_probe(struct hid_device *hdev,
 		goto err;
 	}
 
-	uhdev = (struct usbhid_device *) hdev->driver_data;
-
-	if (uhdev->ifnum == 1) {
+	if (hid_get_drvdata(hdev)) {
+		hid_set_drvdata(hdev, NULL);
 		ret = tpkbd_probe_tp(hdev);
 		if (ret)
 			goto err_hid;
@@ -499,10 +494,7 @@ static void tpkbd_remove_tp(struct hid_device *hdev)
 
 static void tpkbd_remove(struct hid_device *hdev)
 {
-	struct usbhid_device *uhdev;
-
-	uhdev = (struct usbhid_device *) hdev->driver_data;
-	if (uhdev->ifnum == 1)
+	if (hid_get_drvdata(hdev))
 		tpkbd_remove_tp(hdev);
 
 	hid_hw_stop(hdev);
