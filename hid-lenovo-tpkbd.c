@@ -20,6 +20,10 @@
 
 #include "hid-ids.h"
 
+#ifndef HID_MAX_IDS
+#define HID_MAX_IDS 256
+#endif
+
 static const char * const hid_report_names[] = {
 	"HID_INPUT_REPORT",
 	"HID_OUTPUT_REPORT",
