@@ -400,10 +400,10 @@ static int tpkbd_probe_tp(struct hid_device *hdev)
 
 	/* Validate required reports. */
 	for (i = 0; i < 4; i++) {
-		if (!hid_validate_values(hdev, HID_FEATURE_REPORT, 4, i, 1))
+		if (!lenovo_hid_validate_values(hdev, HID_FEATURE_REPORT, 4, i, 1))
 			return -ENODEV;
 	}
-	if (!hid_validate_values(hdev, HID_OUTPUT_REPORT, 3, 0, 2))
+	if (!lenovo_hid_validate_values(hdev, HID_OUTPUT_REPORT, 3, 0, 2))
 		return -ENODEV;
 
 	if (sysfs_create_group(&hdev->dev.kobj,
